@@ -1,18 +1,4 @@
-version: "3.7"
-services:
-  psql:
-    container_name: esus_psql
-    restart: always
-    image: postgres:13.5
-    volumes:
-      - ./data/psql_db:/var/lib/postgresql/data
-      - ./data/backups:/home
-    environment:
-      - POSTGRES_DB="esus"
-      - POSTGRES_USER="postgres"
-      - POSTGRES_PASSWORD="esus"
-    ports:
-      - "5432:5432"
+database:
   app:
     container_name: esus_app
     platform: linux/amd64
@@ -29,26 +15,32 @@ services:
     volumes:
       - optEsus:/opt/e-SUS
     ports:
-      - "${APP_PORT}:8080"
+      - "88:8080"
     depends_on:
-      - psql
-  cron:
-    container_name: esus_cron
+      - database
+
+  database:
+    image: postgres:latest
+    container_name: postgres
     restart: always
-    build:
-      context: cron
-      dockerfile: Dockerfile
-      args:
-        - TIMEZONE="America/Bahia"
-    volumes:
-      - ./cron/crontab.txt:/crontab.txt
-      - ./cron/app:/home
     environment:
-      - POSTGRES_DB="esus"
-      - POSTGRES_USER="postgres"
-      - PGPASSWORD="esus"
-    depends_on:
-      - psql
+      POSTGRES_DB: 'esus'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'esus'
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  pgadmin:
+      image: dpage/pgadmin4
+      container_name: pgadmin
+      restart: always
+      environment:
+        PGADMIN_DEFAULT_EMAIL: 'admin@pgadmin.org'
+        PGADMIN_DEFAULT_PASSWORD: 'root'
+      ports:
+        - '8089:80'
 
 volumes:
+  postgres-data:
   optEsus:
