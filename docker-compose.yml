@@ -8,11 +8,11 @@ services:
       - ./data/psql_db:/var/lib/postgresql/data
       - ./data/backups:/home
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB="esus"
+      - POSTGRES_USER="postgres"
+      - POSTGRES_PASSWORD="esus"
     ports:
-      - "${POSTGRESQL_PORT}:5432"
+      - "5432:5432"
   app:
     container_name: esus_app
     platform: linux/amd64
@@ -20,16 +20,14 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - POSTGRES_DATABASE=${POSTGRES_DB}
-        - POSTGRES_USERNAME=${POSTGRES_USER}
-        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-        - TIMEZONE=${TIMEZONE}
+        - POSTGRES_DATABASE="esus"
+        - POSTGRES_USERNAME="postgres"
+        - POSTGRES_PASSWORD="esus"
+        - TIMEZONE="America/Bahia"
     stdin_open: true
     tty: true
     volumes:
-      - ./install.sh:/var/www/html/install.sh
-      - ./run.sh:/var/www/html/run.sh
-      - ./data/e-SUS:/opt/e-SUS
+      - optEsus:/opt/e-SUS
     ports:
       - "${APP_PORT}:8080"
     depends_on:
@@ -41,13 +39,16 @@ services:
       context: cron
       dockerfile: Dockerfile
       args:
-        - TIMEZONE=${TIMEZONE}
+        - TIMEZONE="America/Bahia"
     volumes:
       - ./cron/crontab.txt:/crontab.txt
       - ./cron/app:/home
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - PGPASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB="esus"
+      - POSTGRES_USER="postgres"
+      - PGPASSWORD="esus"
     depends_on:
       - psql
+
+volumes:
+  optEsus:
